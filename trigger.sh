@@ -41,14 +41,14 @@ api_response="$(curl -sS -w "\n%{http_code}" \
     -X POST \
     -H "Content-Type: application/json" \
     -H "User-Agent: codepulse-review-action" \
-    --data "$(python3 -c '
-import json, os, sys
+    --data "$(OIDC_TOKEN="${oidc_token}" PR_NUMBER="${PR_NUMBER}" HEAD_SHA="${HEAD_SHA}" python3 -c '
+import json, os
 print(json.dumps({
     "oidc_token": os.environ["OIDC_TOKEN"],
     "pr_number": int(os.environ["PR_NUMBER"]),
     "head_sha": os.environ["HEAD_SHA"],
 }))
-' OIDC_TOKEN="${oidc_token}" PR_NUMBER="${PR_NUMBER}" HEAD_SHA="${HEAD_SHA}")" \
+')" \
     "${CODEPULSE_API_URL}/github/action-trigger")" || {
     # Network-class error — don't break user CI.
     echo "::warning::CodePulse unreachable; skipping review trigger." >&2
