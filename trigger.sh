@@ -76,6 +76,9 @@ case "${status}" in
     stale_sha)
         echo "::warning::Head SHA has moved since this workflow started; skipping."
         ;;
+    pr_fetch_failed)
+        echo "::warning::CodePulse couldn't fetch the PR to verify head SHA; skipping."
+        ;;
     flag_off)
         echo "::warning::github_action_trigger is disabled for this workspace."
         ;;
