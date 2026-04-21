@@ -1,0 +1,27 @@
+name: "CodePulse Review"
+description: >-
+  Triggers a CodePulse code review for this pull request once your CI
+  jobs complete. Requires the CodePulse GitHub App to be installed on
+  this repo or its org. Use `needs:` in the caller workflow to gate
+  when this runs.
+author: "CodePulse"
+branding:
+  icon: "check-circle"
+  color: "blue"
+
+inputs:
+  api-url:
+    description: "CodePulse API base URL. Override only for staging envs."
+    required: false
+    default: "https://review.codepulsehq.com"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Trigger CodePulse review"
+      shell: bash
+      env:
+        CODEPULSE_API_URL: ${{ inputs.api-url }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: ${{ github.action_path }}/trigger.sh

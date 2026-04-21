@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Shellcheck trigger.sh
+        run: shellcheck trigger.sh
+
+      - name: Validate action.yml syntax
+        run: |
+          python3 -c "
+          import sys, yaml
+          with open('action.yml') as f:
+              doc = yaml.safe_load(f)
+          assert doc['name'] == 'CodePulse Review', 'unexpected action name'
+          assert doc['runs']['using'] == 'composite', 'must be a composite action'
+          steps = doc['runs']['steps']
+          assert any('trigger.sh' in (s.get('run') or '') for s in steps), \
+              'no step references trigger.sh'
+          print('action.yml ok')
+          "
