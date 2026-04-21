@@ -59,6 +59,7 @@ The action's design principle: **your CI only turns red when something you can f
 | Review queued | `0` | `::notice::` |
 | Already in flight for this SHA | `0` | `::notice::` |
 | Head SHA has moved since workflow started | `0` | `::warning::` |
+| Couldn't fetch the PR to verify head SHA | `0` | `::warning::` |
 | Monthly quota exhausted | `0` | `::warning::` |
 | PR author not licensed | `0` | `::warning::` |
 | Feature flag disabled | `0` | `::warning::` |
