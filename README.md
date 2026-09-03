@@ -1,6 +1,8 @@
 # CodePulse Review Action
 
-Trigger a [CodePulse](https://review.codepulsehq.com) code review for your pull request the moment your CI jobs complete — no Slack paste, no waiting for a human to nudge the bot.
+[![Marketplace](https://img.shields.io/badge/Marketplace-CodePulse%20Review-blue?logo=github)](https://github.com/marketplace/actions/codepulse-review)
+
+A GitHub Action that triggers an AI-powered [CodePulse](https://codepulse.review) code review on your pull request the moment your CI jobs complete — no Slack paste, no waiting for a human to nudge the bot.
 
 Authentication is handled via GitHub's built-in OIDC provider, so there are **no secrets to configure**.
 
@@ -32,7 +34,7 @@ The GitHub Action gives you **explicit, deterministic control** over when the re
 
 ## Prerequisites
 
-1. **Install the CodePulse GitHub App** on your repo or organization from your [CodePulse dashboard](https://review.codepulsehq.com). The action posts reviews as the CodePulse App; it won't work on a repo the App isn't installed on.
+1. **Install the CodePulse GitHub App** on your repo or organization from your [CodePulse dashboard](https://codepulse.review). The action posts reviews as the CodePulse App; it won't work on a repo the App isn't installed on.
 2. **Enable the *GitHub Action trigger* feature** in your dashboard → Settings → Triggers.
 
 That's it. No token generation, no webhook URL configuration, no secrets in your repo.
@@ -40,7 +42,7 @@ That's it. No token generation, no webhook URL configuration, no secrets in your
 ## How it works
 
 1. The GitHub Actions runner asks GitHub's OIDC provider for a short-lived JWT identifying this workflow run. Audience is pinned to `codepulse` so a token minted for another service can't be silently replayed.
-2. The action POSTs `{oidc_token, pr_number, head_sha}` to `https://review.codepulsehq.com/github/action-trigger`.
+2. The action POSTs `{oidc_token, pr_number, head_sha}` to `https://codepulse.review/github/action-trigger`.
 3. CodePulse verifies the JWT against GitHub's public JWKS, looks up which workspace owns the repo's organization, and dispatches the review if all gates pass (feature flag, seat license, monthly quota).
 4. The action logs a GitHub Actions annotation (`::notice::`, `::warning::`, or `::error::`) describing what happened and exits.
 
@@ -71,7 +73,7 @@ The action's design principle: **your CI only turns red when something you can f
 
 | Input | Required | Default | Description |
 |---|:---:|---|---|
-| `api-url` | no | `https://review.codepulsehq.com` | Override for staging or self-hosted deployments. You almost never need to set this. |
+| `api-url` | no | `https://codepulse.review` | Override for staging or self-hosted deployments. You almost never need to set this. |
 
 ## Runner support
 
@@ -93,11 +95,11 @@ The action itself is ~100 lines of bash. [Read the source.](./trigger.sh)
 
 ## Full documentation
 
-See [review.codepulsehq.com/docs/github-action](https://review.codepulsehq.com/docs/github-action) for the complete setup guide, troubleshooting, and FAQ.
+See [codepulse.review/docs/github-action](https://codepulse.review/docs/github-action) for the complete setup guide, troubleshooting, and FAQ.
 
 ## Questions / issues
 
-- **How to use it:** [review.codepulsehq.com/docs/github-action](https://review.codepulsehq.com/docs/github-action)
+- **How to use it:** [codepulse.review/docs/github-action](https://codepulse.review/docs/github-action)
 - **Bug in the action:** [open an issue](https://github.com/codepulsehq/review-action/issues) on this repo
 - **Everything else (billing, seat licenses, feature requests):** hello@codepulsehq.com
 

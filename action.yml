@@ -13,7 +13,7 @@ inputs:
   api-url:
     description: "CodePulse API base URL. Override only for staging envs."
     required: false
-    default: "https://review.codepulsehq.com"
+    default: "https://codepulse.review"
 
 runs:
   using: "composite"
