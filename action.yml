@@ -1,9 +1,5 @@
 name: "CodePulse Review"
-description: >-
-  Triggers a CodePulse code review for this pull request once your CI
-  jobs complete. Requires the CodePulse GitHub App to be installed on
-  this repo or its org. Use `needs:` in the caller workflow to gate
-  when this runs.
+description: "Trigger a CodePulse AI code review on this PR once CI completes. Requires the CodePulse GitHub App."
 author: "CodePulse"
 branding:
   icon: "check-circle"
