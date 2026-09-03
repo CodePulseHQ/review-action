@@ -35,7 +35,10 @@ oidc_response="$(curl -fsS \
     exit 1
 }
 
-oidc_token="$(printf '%s' "${oidc_response}" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')"
+oidc_token="$(printf '%s' "${oidc_response}" | python3 -c 'import json,sys; print(json.load(sys.stdin)["value"])')" || {
+    echo "::error::GitHub returned an unparseable OIDC token response." >&2
+    exit 1
+}
 
 api_response="$(curl -sS -w "\n%{http_code}" \
     -X POST \
@@ -63,8 +66,35 @@ if [[ "${http_code:0:1}" == "5" && "${http_code}" != "503" ]]; then
     exit 0
 fi
 
-status="$(printf '%s' "${body}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("status",""))')"
-message="$(printf '%s' "${body}" | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("message",""))')"
+if [[ "${http_code:0:1}" == "3" ]]; then
+    # We don't follow redirects (a redirect response body isn't the API's
+    # JSON contract) — surface it as a soft failure rather than crashing
+    # on the JSON parse below. This is what breaks when api-url points at
+    # a domain that's since been redirected to a newer one.
+    echo "::warning::CodePulse API returned HTTP ${http_code} (redirect); skipping. Check that api-url points at the current CodePulse domain." >&2
+    exit 0
+fi
+
+# Parse defensively: any non-JSON or unexpected-shape body (an HTML error
+# page, an empty response, a plain-text upstream error, etc.) must fall
+# through to the "Unexpected CodePulse response" warning below rather than
+# crashing the caller's build with an unhandled traceback.
+parsed="$(printf '%s' "${body}" | python3 -c '
+import json, sys
+
+try:
+    data = json.load(sys.stdin)
+    if not isinstance(data, dict):
+        raise ValueError("response body is not a JSON object")
+except Exception:
+    print("")
+    print("")
+else:
+    print(data.get("status") or "")
+    print(data.get("message") or "")
+')"
+status="$(printf '%s' "${parsed}" | sed -n '1p')"
+message="$(printf '%s' "${parsed}" | sed -n '2p')"
 
 case "${status}" in
     dispatched)
