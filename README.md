@@ -14,6 +14,7 @@ jobs:
     # ... your existing lint
 
   codepulse:
+    if: github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork
     needs: [test, lint]
     runs-on: ubuntu-latest
     permissions:
@@ -52,6 +53,8 @@ That's it. No token generation, no webhook URL configuration, no secrets in your
 
 **Fork PRs cannot trigger reviews.** GitHub doesn't grant `id-token: write` to workflows running from forks — that's a GitHub security feature, not a CodePulse restriction. External contributors' PRs still get reviewed through the normal webhook path when a maintainer installs the App at the org level.
 
+**Guard the job with an explicit `if:` on `head.repo.fork`, as shown above.** Without it, a fork PR run has no OIDC token to request, which the action reports as `auth_failed` — an `::error::` annotation with **exit `1`**. That's the one case where this action turns your CI red for a reason you can't fix from within the PR, so excluding fork runs up front keeps the "only fails on fixable problems" guarantee intact.
+
 ## Exit codes
 
 The action's design principle: **your CI only turns red when something you can fix is wrong.** Operator-side problems (quota, billing, our infrastructure) warn but don't break your merges.
@@ -68,6 +71,8 @@ The action's design principle: **your CI only turns red when something you can f
 | CodePulse API unreachable | `0` | `::warning::` |
 | CodePulse App not installed on this repo | **`1`** | `::error::` |
 | OIDC authentication failed | **`1`** | `::error::` |
+
+If you'd rather this job never fail your required checks — for example if it isn't in your branch protection rules but you still want to see the annotation — add `continue-on-error: true` and a `timeout-minutes` to the job as extra insurance, on top of the fork guard above.
 
 ## Inputs
 
